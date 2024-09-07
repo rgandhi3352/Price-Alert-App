@@ -6,7 +6,7 @@ class PriceUpdateSubscriber
   end
 
   def start_listening
-    puts "Subscribed to #{CHANNEL} for price updates..."
+    # puts "Subscribed to #{CHANNEL} for price updates..."
     Thread.new do
       $redis.subscribe(CHANNEL) do |on|
         on.message do |channel, message|
@@ -20,7 +20,7 @@ class PriceUpdateSubscriber
   private
 
   def handle_price_update(data)
-    puts "Received price update: #{data['price']} for #{data['symbol']} at #{Time.at(data['timestamp'])}"
+    # puts "Received price update: #{data['price']} for #{data['symbol']} at #{Time.at(data['timestamp'])}"
     alerts = Rails.cache.fetch('created_alerts', expires_in: 5.minutes) do
       ::Alert.where(status: 0).to_a
     end

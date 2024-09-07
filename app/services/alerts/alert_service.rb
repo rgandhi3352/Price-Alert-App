@@ -29,13 +29,12 @@ module Alerts
     end
 
     def fetch_alerts(status: nil, page: 1)
-      cache_key = "user_#{@user.id}_alerts_page_#{params[:page]}_status_#{params[:status]}"
+      cache_key = "user_#{@user.id}_alerts_page_#{page}_status_#{status}"
 
       alerts = Rails.cache.fetch(cache_key, expires_in: 10.minutes) do
         scoped_alerts = @user.alerts.where(status: status || [:created, :triggered])
-        scoped_alerts.page(page).per(10)
+        scoped_alerts.page(page).per(10).to_a
       end
-      { alerts: alerts, total_pages: alerts.total_pages }
     end
   end
 end

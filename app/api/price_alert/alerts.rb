@@ -71,9 +71,9 @@ module PriceAlert
       end
       get do
         service = ::Alerts::AlertService.new(current_user)
-        result = service.fetch_alerts(status: params[:status], page: params[:page])
+        alerts = service.fetch_alerts(status: params[:status], page: params[:page])
 
-        { alerts: result[:alerts], total_pages: result[:total_pages] }
+        { success: true, alerts: alerts }
       end
     end
   end

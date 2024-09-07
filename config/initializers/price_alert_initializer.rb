@@ -1,4 +1,6 @@
 Rails.application.config.after_initialize do
-  manager = PriceAlertManager.new
-  manager.start_services
+  if ENV['APP_ENV'] == 'web'
+    manager = PriceAlertManager.new
+    manager.start_services
+  end
 end

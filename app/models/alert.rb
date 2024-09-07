@@ -12,7 +12,7 @@ class Alert < ApplicationRecord
   private
 
   def set_alert_type
-    current_price = BitcoinPriceService.fetch_current_price
+    current_price = ::BitcoinPriceService.fetch_current_price
 
     if current_price.present?
       self.alert_type = if current_price < target_price

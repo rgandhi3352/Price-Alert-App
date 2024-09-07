@@ -34,6 +34,7 @@ module PriceAlertApp
     # Skip views, helpers and assets when generating a new resource.
     config.autoload_paths << Rails.root.join('app/api')
     config.active_job.queue_adapter = :sidekiq
+    config.active_record.legacy_connection_handling = false
     config.api_only = true
   end
 end
