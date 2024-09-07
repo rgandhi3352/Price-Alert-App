@@ -1,34 +1,5 @@
 version: '3.7'
 services:
-  # db:
-  #   image: 'postgres:latest'
-  #   volumes:
-  #     - ./tmp/db:/var/lib/postgresql/data
-  #   environment:
-  #     POSTGRES_USER: raghavgandhi
-  #     POSTGRES_PASSWORD: apple
-  #     POSTGRES_DB: price_alert_app_development
-  #   ports:
-  #     - "5432:5432"
-  # redis:
-  #   image: redis:alpine
-  #   ports:
-  #     - "6379:6379"
-  #   command: redis-server
-  # redis:
-  #   image: redis
-  #   volumes:
-  #     - ~/redis-data:/data
-  # postgres:
-  #   image: postgis/postgis:13-3.2-alpine
-  #   volumes:
-  #     - ~/postgres-data:/var/lib/postgresql/data
-  #   environment:
-  #     POSTGRES_USER: raghavgandhi
-  #     POSTGRES_PASSWORD: apple
-  #     POSTGRES_DB: price_alert_app_development
-    # env_file:
-    #   - ./env/postgres.env # you can also define env variables like this.
   postgres:
     image: postgres:alpine
     restart: always
@@ -42,10 +13,13 @@ services:
       - POSTGRES_DB=price_alert_app_development
 
   redis:
-    image: redis:alpine
-    restart: always
+    image: redis:latest
     ports:
-     - 6379:6379
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+
   web:
     build: .
     command: bash -c "rm -f tmp/pids/server.pid && bundle exec rails s -b '0.0.0.0'"
@@ -56,14 +30,19 @@ services:
     depends_on:
       - postgres
       - redis
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+
   sidekiq:
     build: .
-    command: bundle exec sidekiq
+    command: bundle exec sidekiq --environment development
     depends_on:
       - postgres
       - redis
     volumes:
       - .:/price_alert_app
+    environment:
+      - REDIS_URL=redis://redis:6379/0
 
 volumes:
   db_data: {}

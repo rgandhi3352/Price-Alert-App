@@ -6,11 +6,12 @@ module Alerts
     end
 
     def create_alert(target_price)
-      clear_cache
       return 'Maximum number of alerts reached' unless @user.can_create_alert?
 
       alert = @user.alerts.new(target_price: target_price)
       if alert.save
+        Rails.cache.delete_matched("user_#{@user.id}_alerts*")
+        Rails.cache.delete('created_alerts')
         { success: true, alert: alert }
       else
         { success: false, errors: alert.errors.full_messages }
@@ -22,29 +23,19 @@ module Alerts
       return { success: false, error: 'Alert not found' } unless alert
 
       alert.update(status: :deleted)
-      clear_cache
+      Rails.cache.delete_matched("user_#{@user.id}_alerts*")
+      Rails.cache.delete('created_alerts')
       { success: true }
     end
 
     def fetch_alerts(status: nil, page: 1)
-      cache_key = "user:#{@user.id}:alerts:status:#{status}:page:#{page}"
-      cached_alerts = $redis.get(cache_key)
+      cache_key = "user_#{@user.id}_alerts_page_#{params[:page]}_status_#{params[:status]}"
 
-      if cached_alerts
-        JSON.parse(cached_alerts)
-      else
-        alerts = @user.alerts.where(status: status || [:created, :triggered])
-        paginated_alerts = alerts.page(page).per(PER_PAGE)
-        $redis.set(cache_key, paginated_alerts.to_json)
-        $redis.expire(cache_key, 10.minutes.to_i)
-        paginated_alerts
+      alerts = Rails.cache.fetch(cache_key, expires_in: 10.minutes) do
+        scoped_alerts = @user.alerts.where(status: status || [:created, :triggered])
+        scoped_alerts.page(page).per(10)
       end
-    end
-
-    private
-
-    def clear_cache
-      $redis.keys("user:#{@user.id}:alerts:*").each { |key| $redis.del(key) }
+      { alerts: alerts, total_pages: alerts.total_pages }
     end
   end
 end
