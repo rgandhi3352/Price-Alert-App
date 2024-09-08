@@ -6,9 +6,10 @@
 ## Table of Contents
 
 - [Features](#features)
+- [Setup](#setup)
 - [API Endpoints](#api-endpoints)
   - [User API](#user-api)
-  - [Alert API](#alert-api)
+  - [Alerts API](#alerts-api)
 - [Background Processing](#background-processing)
 - [Email Notifications](#email-notifications)
 
@@ -19,6 +20,28 @@
 - **Real-Time Price Updates**: Uses Binance WebSocket to get real-time Bitcoin prices.
 - **Pub/Sub System**: Utilizes Redis Pub/Sub to manage real-time price updates.
 - **Email Notifications**: Sends email alerts using Gmail SMTP when the target price is reached.
+
+## Setup
+
+### Prerequisites
+
+Ensure you have Docker and Docker Compose installed on your system.
+
+## Running the Project
+
+1. Clone the repository:
+   ```bash
+   git clone <repository_url>
+   cd price_alert_app
+   ```
+2. Build and run the project:
+   ```bash
+   docker-compose up --build
+    ```
+3. Run database migrations:
+   ```bash
+   docker-compose exec web rails db:create db:migrate
+    ```
 
 ## Architecture and Design
 
